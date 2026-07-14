@@ -1,3 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Studio Roster · Iti Iti Yogashram</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css" />
+<style>
+  html, body { margin: 0; padding: 0; background: #F2EEE1; }
+  body { display: flex; justify-content: center; padding: 24px 12px; min-height: 100vh; }
+  #app { max-width: 480px; margin: 0 auto; }
+  @media (max-width: 480px) { body { padding: 0; } #app { border-radius: 0; min-height: 100vh; max-width: 100%; } }
+</style>
+</head>
+<body>
 <div id="app">
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500&family=Work+Sans:wght@400;500;600;700&display=swap');
@@ -39,7 +54,7 @@
       overflow: hidden;
       isolation: isolate;
     }
-    #app * { box-sizing: border-box; }
+    #app * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
     /* ---------- Signature ambient breathing aura ---------- */
     #app::before, #app::after {
@@ -141,6 +156,8 @@
       isolation: isolate;
       transition: transform 0.15s ease, box-shadow 0.25s ease, filter 0.2s ease;
       box-shadow: 0 4px 14px -6px rgba(51,69,44,0.45);
+      touch-action: manipulation;
+      min-height: 40px;
     }
     #app button::before {
       content: "";
@@ -246,8 +263,8 @@
     @keyframes toastIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 
     /* ---------- Modal ---------- */
-    #app .modal-overlay { position: fixed; inset: 0; background: rgba(43,51,36,0.45); backdrop-filter: blur(2px); display: flex; align-items: center; justify-content: center; z-index: 9998; animation: toastIn 0.2s ease; }
-    #app .modal-box { background: var(--surface); border: 1px solid var(--border); border-radius: 18px; padding: 1.75rem; max-width: 320px; width: 90%; box-shadow: 0 30px 60px -20px rgba(0,0,0,0.35); }
+    #app .modal-overlay { position: fixed; inset: 0; background: rgba(43,51,36,0.45); backdrop-filter: blur(2px); display: flex; align-items: center; justify-content: center; z-index: 9998; animation: toastIn 0.2s ease; padding: 16px; overflow-y: auto; }
+    #app .modal-box { background: var(--surface); border: 1px solid var(--border); border-radius: 18px; padding: 1.75rem; max-width: 320px; width: 90%; box-shadow: 0 30px 60px -20px rgba(0,0,0,0.35); max-height: 90vh; overflow-y: auto; margin: auto; }
     #app .modal-box h3 { font-family: var(--font-display); margin: 0 0 6px; font-size: 18px; font-weight: 500; color: var(--green-deep); }
     #app .modal-box p { margin: 0 0 14px; font-size: 13px; color: var(--text-secondary); }
     #app .modal-box .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; }
@@ -266,7 +283,14 @@
 
     /* Phone */
     @media (max-width: 480px) {
-      #app { padding: 1.35rem 1rem 2rem; border-radius: 14px; }
+      #app { padding: 1.35rem 1rem 2rem; border-radius: 14px; overflow-x: hidden; }
+
+      /* iOS Safari auto-zooms on focus when input font-size < 16px */
+      #app input, #app select { font-size: 16px; }
+
+      /* Comfortable tap targets */
+      #app button { min-height: 44px; }
+      #app .card [data-delete], #app .card [data-renew] { min-width: 44px; }
 
       /* Header stacks and controls go full-width */
       #app .topbar { flex-direction: column; align-items: stretch; gap: 12px; margin-bottom: 18px; }
@@ -736,3 +760,5 @@ document.getElementById("sortSelect").addEventListener("change", renderList);
 
 setInterval(() => { if (accessToken) refresh({ silent: true }); }, 60000);
 </script>
+</body>
+</html>
