@@ -1,91 +1,273 @@
 <div id="app">
   <style>
-    #app * { box-sizing: border-box; font-family: var(--font-sans); }
-    #app { animation: appFadeIn 0.35s ease; }
-    @keyframes appFadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+    @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500&family=Work+Sans:wght@400;500;600;700&display=swap');
 
-    #app h2 { font-size: 18px; font-weight: 500; margin: 0 0 1rem; }
+    #app {
+      --bg: #F2EEE1;
+      --bg-glow-1: #DCE6C9;
+      --bg-glow-2: #EFCF9E;
+      --surface: #FCFAF3;
+      --surface-2: #FBF7EC;
+      --border: #E3DCC8;
+      --green-deep: #33452C;
+      --green-mid: #5C7A4F;
+      --green-soft: #90A87C;
+      --green-pale: #E3EAD7;
+      --gold: #BD8A3F;
+      --gold-soft: #F1DDB0;
+      --clay: #B15E3F;
+      --clay-soft: #F3DCCF;
+      --text-primary: #2B3324;
+      --text-secondary: #756F5C;
+      --text-muted: #9B9784;
+      --danger: #A8523A;
+      --danger-bg: #F3DCD1;
+      --warning: #B4813A;
+      --warning-bg: #F3E4C4;
+      --success: #4B7247;
+      --success-bg: #E2EBD9;
+      --radius: 10px;
+      --font-display: 'Fraunces', Georgia, serif;
+      --font-body: 'Work Sans', -apple-system, sans-serif;
 
-    /* Top bar */
-    #app .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
-    #app .title-block { display: flex; flex-direction: column; gap: 2px; }
-    #app .title-block .title { font-size: 19px; font-weight: 600; }
-    #app .title-block .subtitle { font-size: 13px; color: var(--text-secondary); }
+      position: relative;
+      background: var(--bg);
+      font-family: var(--font-body);
+      color: var(--text-primary);
+      padding: 2rem 1.75rem 3rem;
+      border-radius: 24px;
+      overflow: hidden;
+      isolation: isolate;
+    }
+    #app * { box-sizing: border-box; }
 
-    /* Stats */
-    #app .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 18px; }
-    #app .stat-card { background: var(--surface-2); border: 0.5px solid var(--border); border-radius: 12px; padding: 12px 14px; }
-    #app .stat-num { font-size: 22px; font-weight: 600; line-height: 1.2; }
-    #app .stat-label { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+    /* ---------- Signature ambient breathing aura ---------- */
+    #app::before, #app::after {
+      content: "";
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(60px);
+      opacity: 0.55;
+      z-index: -1;
+      animation: breathe 9s ease-in-out infinite;
+    }
+    #app::before {
+      width: 320px; height: 320px;
+      background: var(--bg-glow-1);
+      top: -100px; left: -80px;
+    }
+    #app::after {
+      width: 280px; height: 280px;
+      background: var(--bg-glow-2);
+      bottom: -90px; right: -60px;
+      animation-delay: 3s;
+    }
+    @keyframes breathe {
+      0%, 100% { transform: scale(1); opacity: 0.45; }
+      50% { transform: scale(1.25); opacity: 0.7; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      #app::before, #app::after { animation: none; }
+    }
 
-    /* Controls */
-    #app .row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
-    #app input, #app select { flex: 1; min-width: 140px; transition: box-shadow 0.15s ease, border-color 0.15s ease; }
-    #app input:focus-visible, #app select:focus-visible, #app button:focus-visible { outline: 2px solid var(--accent-secondary, #4a90e2); outline-offset: 2px; }
-    #app .toolbar { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
-    #app .toolbar input[type="search"] { flex: 2; min-width: 160px; }
-    #app .toolbar select { flex: 1; min-width: 130px; }
+    #app h2 { font-family: var(--font-display); font-size: 18px; font-weight: 500; margin: 0 0 1rem; }
 
-    #app button { cursor: pointer; transition: transform 0.1s ease, opacity 0.15s ease; }
-    #app button:active { transform: scale(0.97); }
-    #app button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+    /* ---------- Header ---------- */
+    #app .topbar { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 22px; position: relative; z-index: 1; }
+    #app .title-block { display: flex; flex-direction: column; gap: 3px; }
+    #app .title-block .eyebrow { font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--green-mid); font-weight: 600; }
+    #app .title-block .title { font-family: var(--font-display); font-size: 26px; font-weight: 500; color: var(--green-deep); line-height: 1.1; }
+    #app .title-block .subtitle { font-family: var(--font-display); font-style: italic; font-size: 14px; color: var(--text-secondary); margin-top: 2px; }
 
-    /* Cards */
-    #app .card { background: var(--surface-2); border: 0.5px solid var(--border); border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; gap: 12px; transition: border-color 0.15s ease, transform 0.15s ease; animation: cardIn 0.25s ease; }
-    #app .card:hover { border-color: var(--text-secondary); }
-    @keyframes cardIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
-    #app .name { font-weight: 500; font-size: 15px; }
-    #app .sub { font-size: 13px; color: var(--text-secondary); margin-top: 2px; }
-    #app .days { font-size: 22px; font-weight: 500; min-width: 90px; text-align: right; }
-    #app .badge { font-size: 12px; padding: 3px 10px; border-radius: var(--radius); font-weight: 500; white-space: nowrap; }
+    /* ---------- Stats ---------- */
+    #app .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 22px; position: relative; z-index: 1; }
+    #app .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      position: relative;
+      box-shadow: 0 1px 0 rgba(51,69,44,0.03), 0 8px 20px -14px rgba(51,69,44,0.25);
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+    #app .stat-card:hover { transform: translateY(-2px); box-shadow: 0 12px 24px -14px rgba(51,69,44,0.35); }
+    #app .stat-card::before {
+      content: ""; position: absolute; left: 0; top: 14px; bottom: 14px; width: 3px; border-radius: 3px;
+      background: var(--green-mid);
+    }
+    #app .stat-card.warn::before { background: var(--gold); }
+    #app .stat-card.danger::before { background: var(--clay); }
+    #app .stat-num { font-family: var(--font-display); font-size: 26px; font-weight: 600; line-height: 1.2; color: var(--green-deep); }
+    #app .stat-card.warn .stat-num { color: var(--gold); }
+    #app .stat-card.danger .stat-num { color: var(--clay); }
+    #app .stat-label { font-size: 11.5px; color: var(--text-secondary); margin-top: 3px; letter-spacing: 0.02em; }
 
-    /* Empty state */
-    #app .empty-state { text-align: center; padding: 2.5rem 1rem; color: var(--text-secondary); }
-    #app .empty-state .icon { font-size: 28px; margin-bottom: 8px; opacity: 0.6; }
-    #app .empty-state p { margin: 0; font-size: 14px; }
+    /* ---------- Inputs ---------- */
+    #app .row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; position: relative; z-index: 1; }
+    #app input, #app select {
+      flex: 1; min-width: 140px;
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 13px;
+      font-family: var(--font-body);
+      font-size: 14px;
+      color: var(--text-primary);
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    #app input::placeholder { color: var(--text-muted); }
+    #app input:focus, #app select:focus {
+      outline: none;
+      border-color: var(--green-mid);
+      box-shadow: 0 0 0 4px var(--green-pale);
+    }
+    #app .toolbar { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; position: relative; z-index: 1; }
+    #app .toolbar input[type="search"] { flex: 2; min-width: 170px; }
+    #app .toolbar select { flex: 1; min-width: 150px; cursor: pointer; }
 
-    /* Skeleton loading */
-    #app .skeleton { background: var(--surface-2); border: 0.5px solid var(--border); border-radius: 12px; height: 64px; margin-bottom: 10px; position: relative; overflow: hidden; }
-    #app .skeleton::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, transparent, var(--border), transparent); animation: shimmer 1.3s infinite; }
+    /* ---------- Buttons (animated, signature-adjacent) ---------- */
+    #app button {
+      cursor: pointer;
+      font-family: var(--font-body);
+      font-weight: 600;
+      font-size: 13.5px;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 16px;
+      color: var(--surface);
+      background: linear-gradient(135deg, var(--green-mid), var(--green-deep));
+      position: relative;
+      overflow: hidden;
+      isolation: isolate;
+      transition: transform 0.15s ease, box-shadow 0.25s ease, filter 0.2s ease;
+      box-shadow: 0 4px 14px -6px rgba(51,69,44,0.45);
+    }
+    #app button::before {
+      content: "";
+      position: absolute; inset: 0;
+      background: linear-gradient(135deg, var(--gold), var(--clay));
+      opacity: 0;
+      z-index: -1;
+      transition: opacity 0.3s ease;
+    }
+    #app button:hover::before { opacity: 1; }
+    #app button:hover { transform: translateY(-2px); box-shadow: 0 8px 20px -6px rgba(189,138,63,0.5); }
+    #app button:active { transform: translateY(0) scale(0.97); }
+    #app button:disabled { opacity: 0.55; cursor: not-allowed; transform: none; box-shadow: none; }
+    #app button:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+
+    /* secondary/ghost buttons (delete, logout) get a quieter treatment */
+    #app #logoutBtn, #app [data-delete] {
+      background: transparent;
+      color: var(--text-secondary);
+      box-shadow: none;
+      border: 1.5px solid var(--border);
+    }
+    #app #logoutBtn::before, #app [data-delete]::before { background: var(--danger-bg); opacity: 0; }
+    #app #logoutBtn:hover, #app [data-delete]:hover { color: var(--danger); border-color: var(--danger); transform: translateY(-1px); box-shadow: none; }
+    #app #logoutBtn:hover::before, #app [data-delete]:hover::before { opacity: 1; }
+
+    /* ripple */
+    #app .ripple {
+      position: absolute;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.55);
+      transform: scale(0);
+      animation: rippleAnim 0.6s ease-out;
+      pointer-events: none;
+    }
+    @keyframes rippleAnim { to { transform: scale(3.2); opacity: 0; } }
+
+    /* ---------- Cards ---------- */
+    #app .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1rem 1.25rem;
+      margin-bottom: 10px;
+      display: flex; justify-content: space-between; align-items: center; gap: 12px;
+      position: relative; z-index: 1;
+      transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+      animation: cardIn 0.35s ease;
+    }
+    #app .card:hover { transform: translateY(-2px); border-color: var(--green-soft); box-shadow: 0 10px 24px -16px rgba(51,69,44,0.35); }
+    @keyframes cardIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    #app .name { font-family: var(--font-display); font-weight: 500; font-size: 16px; color: var(--green-deep); }
+    #app .sub { font-size: 12.5px; color: var(--text-secondary); margin-top: 3px; }
+    #app .badge { font-size: 11.5px; padding: 4px 11px; border-radius: 20px; font-weight: 600; white-space: nowrap; letter-spacing: 0.01em; }
+
+    /* ---------- Empty state ---------- */
+    #app .empty-state { text-align: center; padding: 3rem 1rem; color: var(--text-secondary); position: relative; z-index: 1; }
+    #app .empty-state .icon-wrap {
+      width: 52px; height: 52px; margin: 0 auto 14px; border-radius: 50%;
+      background: var(--green-pale); display: flex; align-items: center; justify-content: center;
+      font-size: 22px; color: var(--green-mid);
+      animation: breathe 4s ease-in-out infinite;
+    }
+    #app .empty-state p { margin: 0; font-family: var(--font-display); font-style: italic; font-size: 15px; }
+
+    /* ---------- Skeleton ---------- */
+    #app .skeleton { background: var(--surface-2); border: 1px solid var(--border); border-radius: 14px; height: 66px; margin-bottom: 10px; position: relative; overflow: hidden; }
+    #app .skeleton::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, transparent, var(--gold-soft), transparent); animation: shimmer 1.3s infinite; }
     @keyframes shimmer { from { transform: translateX(-100%); } to { transform: translateX(100%); } }
 
-    /* Login */
-    #app .login-box { max-width: 340px; margin: 2.5rem auto; background: var(--surface-2); border: 0.5px solid var(--border); border-radius: 14px; padding: 1.75rem; }
-    #app .login-box .login-title { font-weight: 600; font-size: 17px; margin: 0 0 4px; }
-    #app .login-box .login-sub { font-size: 13px; color: var(--text-secondary); margin: 0 0 16px; }
-    #app .login-box input { width: 100%; margin-bottom: 10px; }
-    #app .login-box button { width: 100%; }
-    #app .error-text { color: var(--text-danger); font-size: 13px; margin: 6px 0 0; min-height: 16px; }
+    /* ---------- Login ---------- */
+    #app .login-box {
+      max-width: 360px; margin: 1.5rem auto;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 2.25rem 2rem;
+      position: relative; z-index: 1;
+      box-shadow: 0 20px 50px -30px rgba(51,69,44,0.4);
+    }
+    #app .login-box .mark {
+      width: 46px; height: 46px; border-radius: 50%; margin: 0 auto 16px;
+      background: linear-gradient(135deg, var(--green-mid), var(--green-deep));
+      display: flex; align-items: center; justify-content: center;
+      color: var(--surface); font-size: 20px;
+      box-shadow: 0 8px 20px -8px rgba(51,69,44,0.5);
+    }
+    #app .login-box .login-title { font-family: var(--font-display); font-weight: 500; font-size: 22px; margin: 0 0 4px; text-align: center; color: var(--green-deep); }
+    #app .login-box .login-sub { font-family: var(--font-display); font-style: italic; font-size: 13.5px; color: var(--text-secondary); margin: 0 0 20px; text-align: center; }
+    #app .login-box input { width: 100%; margin-bottom: 11px; }
+    #app .login-box button { width: 100%; padding: 11px 16px; }
+    #app .error-text { color: var(--danger); font-size: 12.5px; margin: 8px 0 0; min-height: 16px; text-align: center; }
 
-    /* Toast */
+    /* ---------- Toast ---------- */
     #app .toast-wrap { position: fixed; bottom: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 8px; }
-    #app .toast { background: var(--surface-2); border: 0.5px solid var(--border); border-radius: 10px; padding: 10px 14px; font-size: 13px; box-shadow: 0 4px 16px rgba(0,0,0,0.15); animation: toastIn 0.2s ease; max-width: 280px; }
-    #app .toast.success { border-left: 3px solid var(--text-success, #2e7d32); }
-    #app .toast.error { border-left: 3px solid var(--text-danger, #c0392b); }
-    @keyframes toastIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+    #app .toast {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+      padding: 11px 16px; font-size: 13px; font-family: var(--font-body);
+      box-shadow: 0 10px 30px -10px rgba(51,69,44,0.35); animation: toastIn 0.25s ease; max-width: 280px;
+    }
+    #app .toast.success { border-left: 3px solid var(--success); }
+    #app .toast.error { border-left: 3px solid var(--danger); }
+    @keyframes toastIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 
-    /* Modal */
-    #app .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); display: flex; align-items: center; justify-content: center; z-index: 9998; animation: toastIn 0.15s ease; }
-    #app .modal-box { background: var(--surface-2); border: 0.5px solid var(--border); border-radius: 14px; padding: 1.5rem; max-width: 320px; width: 90%; }
-    #app .modal-box h3 { margin: 0 0 6px; font-size: 16px; font-weight: 600; }
+    /* ---------- Modal ---------- */
+    #app .modal-overlay { position: fixed; inset: 0; background: rgba(43,51,36,0.45); backdrop-filter: blur(2px); display: flex; align-items: center; justify-content: center; z-index: 9998; animation: toastIn 0.2s ease; }
+    #app .modal-box { background: var(--surface); border: 1px solid var(--border); border-radius: 18px; padding: 1.75rem; max-width: 320px; width: 90%; box-shadow: 0 30px 60px -20px rgba(0,0,0,0.35); }
+    #app .modal-box h3 { font-family: var(--font-display); margin: 0 0 6px; font-size: 18px; font-weight: 500; color: var(--green-deep); }
     #app .modal-box p { margin: 0 0 14px; font-size: 13px; color: var(--text-secondary); }
-    #app .modal-box .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 14px; }
+    #app .modal-box .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; }
     #app .modal-box input { width: 100%; margin-bottom: 4px; }
 
     @media (max-width: 480px) {
-      #app .stats-row { grid-template-columns: repeat(3, 1fr); gap: 6px; }
-      #app .stat-num { font-size: 18px; }
+      #app { padding: 1.5rem 1.1rem 2.25rem; }
+      #app .stats-row { grid-template-columns: repeat(3, 1fr); gap: 7px; }
+      #app .stat-num { font-size: 19px; }
       #app .card { flex-wrap: wrap; }
-      #app .days { text-align: left; min-width: unset; }
     }
   </style>
 
   <h2 class="sr-only" style="position:absolute;left:-9999px;">Course purchase tracker showing days remaining for each student, with renewal option, behind a login</h2>
 
   <div id="loginScreen" class="login-box">
-    <p class="login-title">Sign in</p>
-    <p class="login-sub">Access your student course tracker</p>
-    <input id="emailInput" type="email" placeholder="name@company.com" autocomplete="username" />
+    <div class="mark"><i class="ti ti-flower" aria-hidden="true"></i></div>
+    <p class="login-title">Welcome back</p>
+    <p class="login-sub">Sign in to your studio roster</p>
+    <input id="emailInput" type="email" placeholder="name@studio.com" autocomplete="username" />
     <input id="passwordInput" type="password" placeholder="Password" autocomplete="current-password" />
     <button id="loginBtn">Sign in</button>
     <p id="loginError" class="error-text"></p>
@@ -94,8 +276,9 @@
   <div id="mainScreen" style="display:none;">
     <div class="topbar">
       <div class="title-block">
-        <span class="title">Course Tracker</span>
-        <span class="subtitle" id="lastUpdated">—</span>
+        <span class="eyebrow">Studio Roster</span>
+        <span class="title">Your students</span>
+        <span class="subtitle" id="lastUpdated">— gathering today's practice —</span>
       </div>
       <button id="logoutBtn"><i class="ti ti-logout" style="font-size:15px;vertical-align:-2px;" aria-hidden="true"></i> Sign out</button>
     </div>
@@ -105,12 +288,12 @@
         <div class="stat-num" id="statTotal">0</div>
         <div class="stat-label">Total students</div>
       </div>
-      <div class="stat-card">
-        <div class="stat-num" id="statExpiring" style="color:var(--text-warning);">0</div>
+      <div class="stat-card warn">
+        <div class="stat-num" id="statExpiring">0</div>
         <div class="stat-label">Expiring soon</div>
       </div>
-      <div class="stat-card">
-        <div class="stat-num" id="statExpired" style="color:var(--text-danger);">0</div>
+      <div class="stat-card danger">
+        <div class="stat-num" id="statExpired">0</div>
         <div class="stat-label">Expired</div>
       </div>
     </div>
@@ -119,7 +302,7 @@
       <input id="nameInput" placeholder="Student name" />
       <input id="courseInput" placeholder="Course name" />
       <input id="daysInput" type="number" min="1" placeholder="Duration (days)" style="max-width:140px;" />
-      <button id="addBtn" style="white-space:nowrap;"><i class="ti ti-plus" style="font-size:16px;vertical-align:-2px;" aria-hidden="true"></i> Add</button>
+      <button id="addBtn" style="white-space:nowrap;"><i class="ti ti-plus" style="font-size:16px;vertical-align:-2px;" aria-hidden="true"></i> Add student</button>
     </div>
 
     <div class="toolbar">
@@ -181,6 +364,21 @@ function showLogin() {
   document.getElementById("loginError").textContent = "";
 }
 
+// ---------- Ripple effect on all buttons ----------
+document.getElementById("app") && document.addEventListener("click", (e) => {
+  const btn = e.target.closest("#app button");
+  if (!btn) return;
+  const rect = btn.getBoundingClientRect();
+  const ripple = document.createElement("span");
+  const size = Math.max(rect.width, rect.height);
+  ripple.className = "ripple";
+  ripple.style.width = ripple.style.height = size + "px";
+  ripple.style.left = (e.clientX - rect.left - size / 2) + "px";
+  ripple.style.top = (e.clientY - rect.top - size / 2) + "px";
+  btn.appendChild(ripple);
+  setTimeout(() => ripple.remove(), 650);
+});
+
 // ---------- Toasts ----------
 function showToast(message, type = "success") {
   const wrap = document.getElementById("toastWrap");
@@ -206,8 +404,8 @@ function openModal({ title, body, confirmLabel, danger = false, showInput = fals
           <p>${body}</p>
           ${showInput ? `<input id="modalInput" type="number" min="1" value="${inputValue}" placeholder="Days" />` : ""}
           <div class="modal-actions">
-            <button id="modalCancel">Cancel</button>
-            <button id="modalConfirm" style="${danger ? 'background:var(--bg-danger); color:var(--text-danger);' : ''}">${confirmLabel}</button>
+            <button id="modalCancel" style="background:transparent; color:var(--text-secondary); box-shadow:none; border:1.5px solid var(--border);">Cancel</button>
+            <button id="modalConfirm" style="${danger ? 'background:linear-gradient(135deg, var(--clay), var(--danger));' : ''}">${confirmLabel}</button>
           </div>
         </div>
       </div>`;
@@ -323,7 +521,6 @@ function getFilteredSortedStudents() {
   } else if (sortMode === "name") {
     list = [...list].sort((a, b) => a.name.localeCompare(b.name));
   }
-  // "recent" keeps the API's created_at.desc order already returned
 
   return list;
 }
@@ -335,8 +532,8 @@ function renderList() {
   if (!currentStudents.length) {
     list.innerHTML = `
       <div class="empty-state">
-        <div class="icon"><i class="ti ti-school" aria-hidden="true"></i></div>
-        <p>No students yet. Add one using the form above.</p>
+        <div class="icon-wrap"><i class="ti ti-yoga" aria-hidden="true"></i></div>
+        <p>No students yet — add your first one above.</p>
       </div>`;
     return;
   }
@@ -344,7 +541,7 @@ function renderList() {
   if (!students.length) {
     list.innerHTML = `
       <div class="empty-state">
-        <div class="icon"><i class="ti ti-search-off" aria-hidden="true"></i></div>
+        <div class="icon-wrap"><i class="ti ti-search" aria-hidden="true"></i></div>
         <p>No students match your search.</p>
       </div>`;
     return;
@@ -353,8 +550,8 @@ function renderList() {
   list.innerHTML = students.map(s => {
     const left = daysLeft(s.start_date, s.duration_days);
     const expired = left <= 0;
-    const colorBg = expired ? "var(--bg-danger)" : (left <= 3 ? "var(--bg-warning)" : "var(--bg-success)");
-    const colorText = expired ? "var(--text-danger)" : (left <= 3 ? "var(--text-warning)" : "var(--text-success)");
+    const colorBg = expired ? "var(--danger-bg)" : (left <= 3 ? "var(--warning-bg)" : "var(--success-bg)");
+    const colorText = expired ? "var(--danger)" : (left <= 3 ? "var(--warning)" : "var(--success)");
     return `
       <div class="card">
         <div>
@@ -375,7 +572,7 @@ function renderList() {
       const student = currentStudents.find(s => String(s.id) === String(id));
       const confirmed = await openModal({
         title: "Remove student?",
-        body: `This will permanently remove ${student ? escapeHtml(student.name) : "this student"} from the tracker.`,
+        body: `This will permanently remove ${student ? escapeHtml(student.name) : "this student"} from the roster.`,
         confirmLabel: "Remove",
         danger: true
       });
@@ -442,7 +639,7 @@ async function refresh({ silent = false } = {}) {
     renderList();
     setLastUpdated();
   } catch (e) {
-    document.getElementById("list").innerHTML = `<p style="color:var(--text-danger); font-size:14px;">${escapeHtml(e.message)}</p>`;
+    document.getElementById("list").innerHTML = `<p style="color:var(--danger); font-size:14px;">${escapeHtml(e.message)}</p>`;
   }
 }
 
