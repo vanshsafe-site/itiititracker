@@ -253,11 +253,64 @@
     #app .modal-box .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 16px; }
     #app .modal-box input { width: 100%; margin-bottom: 4px; }
 
+    /* ---------- Responsive ---------- */
+
+    /* Tablet */
+    @media (max-width: 768px) {
+      #app { padding: 1.75rem 1.4rem 2.5rem; border-radius: 18px; }
+      #app .title-block .title { font-size: 22px; }
+      #app .stats-row { gap: 9px; }
+      #app .toolbar { flex-wrap: wrap; }
+      #app .toolbar input[type="search"], #app .toolbar select { min-width: 100%; }
+    }
+
+    /* Phone */
     @media (max-width: 480px) {
-      #app { padding: 1.5rem 1.1rem 2.25rem; }
-      #app .stats-row { grid-template-columns: repeat(3, 1fr); gap: 7px; }
-      #app .stat-num { font-size: 19px; }
-      #app .card { flex-wrap: wrap; }
+      #app { padding: 1.35rem 1rem 2rem; border-radius: 14px; }
+
+      /* Header stacks and controls go full-width */
+      #app .topbar { flex-direction: column; align-items: stretch; gap: 12px; margin-bottom: 18px; }
+      #app .topbar #logoutBtn { align-self: flex-start; padding: 8px 14px; font-size: 12.5px; }
+      #app .title-block .title { font-size: 20px; }
+      #app .title-block .subtitle { font-size: 12.5px; }
+
+      /* Stats: keep 3-up but tighten so numbers don't crowd */
+      #app .stats-row { grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 18px; }
+      #app .stat-card { padding: 10px 8px; }
+      #app .stat-card::before { top: 10px; bottom: 10px; }
+      #app .stat-num { font-size: 17px; }
+      #app .stat-label { font-size: 10px; line-height: 1.25; }
+
+      /* Add-student form: stack fields, full-width button */
+      #app .row { flex-direction: column; gap: 8px; margin-bottom: 14px; }
+      #app .row input { min-width: 0; width: 100%; }
+      #app .row #daysInput { max-width: 100%; }
+      #app .row #addBtn { width: 100%; justify-content: center; }
+
+      #app .toolbar { gap: 8px; margin-bottom: 14px; }
+
+      /* Cards: name/meta on top, actions on their own row, full width */
+      #app .card { flex-direction: column; align-items: stretch; gap: 10px; padding: 0.9rem 1rem; }
+      #app .card > div:first-child { width: 100%; }
+      #app .card > div:last-child { width: 100%; justify-content: space-between; }
+      #app .name { font-size: 15px; }
+
+      /* Login card edge-to-edge with breathing room */
+      #app .login-box { margin: 1rem auto; padding: 1.75rem 1.4rem; max-width: 100%; }
+
+      /* Modal fits small screens without touching edges */
+      #app .modal-box { padding: 1.4rem; }
+
+      /* Toasts span width instead of floating narrow at bottom-right */
+      #app .toast-wrap { left: 12px; right: 12px; bottom: 12px; }
+      #app .toast { max-width: 100%; }
+    }
+
+    /* Very small phones */
+    @media (max-width: 340px) {
+      #app .stats-row { grid-template-columns: 1fr; gap: 8px; }
+      #app .stat-card { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; }
+      #app .stat-num { font-size: 18px; }
     }
   </style>
 
