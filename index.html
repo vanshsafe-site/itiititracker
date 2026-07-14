@@ -1,42 +1,141 @@
 <div id="app">
   <style>
     #app * { box-sizing: border-box; font-family: var(--font-sans); }
+    #app { animation: appFadeIn 0.35s ease; }
+    @keyframes appFadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
     #app h2 { font-size: 18px; font-weight: 500; margin: 0 0 1rem; }
-    #app .row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 1.5rem; }
-    #app input { flex: 1; min-width: 140px; }
-    #app .card { background: var(--surface-2); border: 0.5px solid var(--border); border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+
+    /* Top bar */
+    #app .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+    #app .title-block { display: flex; flex-direction: column; gap: 2px; }
+    #app .title-block .title { font-size: 19px; font-weight: 600; }
+    #app .title-block .subtitle { font-size: 13px; color: var(--text-secondary); }
+
+    /* Stats */
+    #app .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 18px; }
+    #app .stat-card { background: var(--surface-2); border: 0.5px solid var(--border); border-radius: 12px; padding: 12px 14px; }
+    #app .stat-num { font-size: 22px; font-weight: 600; line-height: 1.2; }
+    #app .stat-label { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+
+    /* Controls */
+    #app .row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+    #app input, #app select { flex: 1; min-width: 140px; transition: box-shadow 0.15s ease, border-color 0.15s ease; }
+    #app input:focus-visible, #app select:focus-visible, #app button:focus-visible { outline: 2px solid var(--accent-secondary, #4a90e2); outline-offset: 2px; }
+    #app .toolbar { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
+    #app .toolbar input[type="search"] { flex: 2; min-width: 160px; }
+    #app .toolbar select { flex: 1; min-width: 130px; }
+
+    #app button { cursor: pointer; transition: transform 0.1s ease, opacity 0.15s ease; }
+    #app button:active { transform: scale(0.97); }
+    #app button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    /* Cards */
+    #app .card { background: var(--surface-2); border: 0.5px solid var(--border); border-radius: 12px; padding: 1rem 1.25rem; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; gap: 12px; transition: border-color 0.15s ease, transform 0.15s ease; animation: cardIn 0.25s ease; }
+    #app .card:hover { border-color: var(--text-secondary); }
+    @keyframes cardIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
     #app .name { font-weight: 500; font-size: 15px; }
-    #app .sub { font-size: 13px; color: var(--text-secondary); }
+    #app .sub { font-size: 13px; color: var(--text-secondary); margin-top: 2px; }
     #app .days { font-size: 22px; font-weight: 500; min-width: 90px; text-align: right; }
-    #app .badge { font-size: 12px; padding: 3px 10px; border-radius: var(--radius); }
-    #app .login-box { max-width: 320px; margin: 2rem auto; background: var(--surface-2); border: 0.5px solid var(--border); border-radius: 12px; padding: 1.5rem; }
+    #app .badge { font-size: 12px; padding: 3px 10px; border-radius: var(--radius); font-weight: 500; white-space: nowrap; }
+
+    /* Empty state */
+    #app .empty-state { text-align: center; padding: 2.5rem 1rem; color: var(--text-secondary); }
+    #app .empty-state .icon { font-size: 28px; margin-bottom: 8px; opacity: 0.6; }
+    #app .empty-state p { margin: 0; font-size: 14px; }
+
+    /* Skeleton loading */
+    #app .skeleton { background: var(--surface-2); border: 0.5px solid var(--border); border-radius: 12px; height: 64px; margin-bottom: 10px; position: relative; overflow: hidden; }
+    #app .skeleton::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, transparent, var(--border), transparent); animation: shimmer 1.3s infinite; }
+    @keyframes shimmer { from { transform: translateX(-100%); } to { transform: translateX(100%); } }
+
+    /* Login */
+    #app .login-box { max-width: 340px; margin: 2.5rem auto; background: var(--surface-2); border: 0.5px solid var(--border); border-radius: 14px; padding: 1.75rem; }
+    #app .login-box .login-title { font-weight: 600; font-size: 17px; margin: 0 0 4px; }
+    #app .login-box .login-sub { font-size: 13px; color: var(--text-secondary); margin: 0 0 16px; }
     #app .login-box input { width: 100%; margin-bottom: 10px; }
-    #app .error-text { color: var(--text-danger); font-size: 13px; margin: 6px 0 0; }
-    #app .topbar { display: flex; justify-content: flex-end; margin-bottom: 8px; }
+    #app .login-box button { width: 100%; }
+    #app .error-text { color: var(--text-danger); font-size: 13px; margin: 6px 0 0; min-height: 16px; }
+
+    /* Toast */
+    #app .toast-wrap { position: fixed; bottom: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 8px; }
+    #app .toast { background: var(--surface-2); border: 0.5px solid var(--border); border-radius: 10px; padding: 10px 14px; font-size: 13px; box-shadow: 0 4px 16px rgba(0,0,0,0.15); animation: toastIn 0.2s ease; max-width: 280px; }
+    #app .toast.success { border-left: 3px solid var(--text-success, #2e7d32); }
+    #app .toast.error { border-left: 3px solid var(--text-danger, #c0392b); }
+    @keyframes toastIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* Modal */
+    #app .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); display: flex; align-items: center; justify-content: center; z-index: 9998; animation: toastIn 0.15s ease; }
+    #app .modal-box { background: var(--surface-2); border: 0.5px solid var(--border); border-radius: 14px; padding: 1.5rem; max-width: 320px; width: 90%; }
+    #app .modal-box h3 { margin: 0 0 6px; font-size: 16px; font-weight: 600; }
+    #app .modal-box p { margin: 0 0 14px; font-size: 13px; color: var(--text-secondary); }
+    #app .modal-box .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 14px; }
+    #app .modal-box input { width: 100%; margin-bottom: 4px; }
+
+    @media (max-width: 480px) {
+      #app .stats-row { grid-template-columns: repeat(3, 1fr); gap: 6px; }
+      #app .stat-num { font-size: 18px; }
+      #app .card { flex-wrap: wrap; }
+      #app .days { text-align: left; min-width: unset; }
+    }
   </style>
 
   <h2 class="sr-only" style="position:absolute;left:-9999px;">Course purchase tracker showing days remaining for each student, with renewal option, behind a login</h2>
 
   <div id="loginScreen" class="login-box">
-    <p style="font-weight:500; font-size:15px; margin:0 0 12px;">Sign in</p>
+    <p class="login-title">Sign in</p>
+    <p class="login-sub">Access your student course tracker</p>
     <input id="emailInput" type="email" placeholder="name@company.com" autocomplete="username" />
     <input id="passwordInput" type="password" placeholder="Password" autocomplete="current-password" />
-    <button id="loginBtn" style="width:100%;">Sign in</button>
+    <button id="loginBtn">Sign in</button>
     <p id="loginError" class="error-text"></p>
   </div>
 
   <div id="mainScreen" style="display:none;">
     <div class="topbar">
+      <div class="title-block">
+        <span class="title">Course Tracker</span>
+        <span class="subtitle" id="lastUpdated">—</span>
+      </div>
       <button id="logoutBtn"><i class="ti ti-logout" style="font-size:15px;vertical-align:-2px;" aria-hidden="true"></i> Sign out</button>
     </div>
+
+    <div class="stats-row" id="statsRow">
+      <div class="stat-card">
+        <div class="stat-num" id="statTotal">0</div>
+        <div class="stat-label">Total students</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num" id="statExpiring" style="color:var(--text-warning);">0</div>
+        <div class="stat-label">Expiring soon</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num" id="statExpired" style="color:var(--text-danger);">0</div>
+        <div class="stat-label">Expired</div>
+      </div>
+    </div>
+
     <div class="row">
       <input id="nameInput" placeholder="Student name" />
       <input id="courseInput" placeholder="Course name" />
-      <input id="daysInput" type="number" placeholder="Duration (days)" style="max-width:140px;" />
+      <input id="daysInput" type="number" min="1" placeholder="Duration (days)" style="max-width:140px;" />
       <button id="addBtn" style="white-space:nowrap;"><i class="ti ti-plus" style="font-size:16px;vertical-align:-2px;" aria-hidden="true"></i> Add</button>
     </div>
+
+    <div class="toolbar">
+      <input id="searchInput" type="search" placeholder="Search by name or course..." />
+      <select id="sortSelect">
+        <option value="recent">Sort: Recently added</option>
+        <option value="urgency">Sort: Most urgent first</option>
+        <option value="name">Sort: Name (A-Z)</option>
+      </select>
+    </div>
+
     <div id="list"></div>
   </div>
+
+  <div id="modalRoot"></div>
+  <div class="toast-wrap" id="toastWrap"></div>
 </div>
 
 <script>
@@ -44,6 +143,7 @@ const SUPABASE_URL = "https://rojkozrmmukpffbfgnuh.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJvamtvenJtbXVrcGZmYmZnbnVoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQwMjI5ODQsImV4cCI6MjA5OTU5ODk4NH0.G01FXklOgAYL3e-two9y5oDG_wGVR4Q8PkfHQDsryzs";
 
 let accessToken = null;
+let currentStudents = [];
 
 function authHeaders() {
   return {
@@ -73,23 +173,86 @@ function showApp() {
 
 function showLogin() {
   accessToken = null;
+  currentStudents = [];
   document.getElementById("mainScreen").style.display = "none";
   document.getElementById("loginScreen").style.display = "block";
+  document.getElementById("emailInput").value = "";
+  document.getElementById("passwordInput").value = "";
+  document.getElementById("loginError").textContent = "";
+}
+
+// ---------- Toasts ----------
+function showToast(message, type = "success") {
+  const wrap = document.getElementById("toastWrap");
+  const el = document.createElement("div");
+  el.className = `toast ${type}`;
+  el.textContent = message;
+  wrap.appendChild(el);
+  setTimeout(() => {
+    el.style.transition = "opacity 0.25s ease";
+    el.style.opacity = "0";
+    setTimeout(() => el.remove(), 250);
+  }, 2600);
+}
+
+// ---------- Modal (confirm delete / renew) ----------
+function openModal({ title, body, confirmLabel, danger = false, showInput = false, inputValue = "30" }) {
+  return new Promise((resolve) => {
+    const root = document.getElementById("modalRoot");
+    root.innerHTML = `
+      <div class="modal-overlay" id="modalOverlay">
+        <div class="modal-box">
+          <h3>${title}</h3>
+          <p>${body}</p>
+          ${showInput ? `<input id="modalInput" type="number" min="1" value="${inputValue}" placeholder="Days" />` : ""}
+          <div class="modal-actions">
+            <button id="modalCancel">Cancel</button>
+            <button id="modalConfirm" style="${danger ? 'background:var(--bg-danger); color:var(--text-danger);' : ''}">${confirmLabel}</button>
+          </div>
+        </div>
+      </div>`;
+    const close = (result) => { root.innerHTML = ""; resolve(result); };
+    document.getElementById("modalOverlay").addEventListener("click", (e) => {
+      if (e.target.id === "modalOverlay") close(null);
+    });
+    document.getElementById("modalCancel").onclick = () => close(null);
+    document.getElementById("modalConfirm").onclick = () => {
+      if (showInput) {
+        const val = document.getElementById("modalInput").value;
+        if (!val || Number(val) <= 0) return;
+        close(val);
+      } else {
+        close(true);
+      }
+    };
+  });
 }
 
 document.getElementById("loginBtn").onclick = async () => {
   const email = document.getElementById("emailInput").value.trim();
   const password = document.getElementById("passwordInput").value;
   const errEl = document.getElementById("loginError");
+  const btn = document.getElementById("loginBtn");
   errEl.textContent = "";
   if (!email || !password) { errEl.textContent = "Enter email and password."; return; }
+  btn.disabled = true;
+  btn.textContent = "Signing in...";
   try {
     await login(email, password);
     showApp();
   } catch (e) {
     errEl.textContent = e.message;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "Sign in";
   }
 };
+
+["emailInput", "passwordInput"].forEach(id => {
+  document.getElementById(id).addEventListener("keydown", (e) => {
+    if (e.key === "Enter") document.getElementById("loginBtn").click();
+  });
+});
 
 document.getElementById("logoutBtn").onclick = showLogin;
 
@@ -134,12 +297,59 @@ function daysLeft(startDate, duration) {
   return diff;
 }
 
-function render(students) {
+function updateStats(students) {
+  const total = students.length;
+  let expiring = 0, expired = 0;
+  students.forEach(s => {
+    const left = daysLeft(s.start_date, s.duration_days);
+    if (left <= 0) expired++;
+    else if (left <= 3) expiring++;
+  });
+  document.getElementById("statTotal").textContent = total;
+  document.getElementById("statExpiring").textContent = expiring;
+  document.getElementById("statExpired").textContent = expired;
+}
+
+function getFilteredSortedStudents() {
+  const query = document.getElementById("searchInput").value.trim().toLowerCase();
+  const sortMode = document.getElementById("sortSelect").value;
+
+  let list = currentStudents.filter(s =>
+    !query || s.name.toLowerCase().includes(query) || s.course_name.toLowerCase().includes(query)
+  );
+
+  if (sortMode === "urgency") {
+    list = [...list].sort((a, b) => daysLeft(a.start_date, a.duration_days) - daysLeft(b.start_date, b.duration_days));
+  } else if (sortMode === "name") {
+    list = [...list].sort((a, b) => a.name.localeCompare(b.name));
+  }
+  // "recent" keeps the API's created_at.desc order already returned
+
+  return list;
+}
+
+function renderList() {
   const list = document.getElementById("list");
-  if (!students.length) {
-    list.innerHTML = `<p style="color:var(--text-muted); font-size:14px;">No students yet. Add one above.</p>`;
+  const students = getFilteredSortedStudents();
+
+  if (!currentStudents.length) {
+    list.innerHTML = `
+      <div class="empty-state">
+        <div class="icon"><i class="ti ti-school" aria-hidden="true"></i></div>
+        <p>No students yet. Add one using the form above.</p>
+      </div>`;
     return;
   }
+
+  if (!students.length) {
+    list.innerHTML = `
+      <div class="empty-state">
+        <div class="icon"><i class="ti ti-search-off" aria-hidden="true"></i></div>
+        <p>No students match your search.</p>
+      </div>`;
+    return;
+  }
+
   list.innerHTML = students.map(s => {
     const left = daysLeft(s.start_date, s.duration_days);
     const expired = left <= 0;
@@ -154,24 +364,55 @@ function render(students) {
         <div style="display:flex; align-items:center; gap:14px;">
           <span class="badge" style="background:${colorBg}; color:${colorText};">${expired ? "Expired" : left + " day" + (left===1?"":"s") + " left"}</span>
           ${expired ? `<button data-renew="${s.id}"><i class="ti ti-refresh" style="font-size:15px;vertical-align:-2px;" aria-hidden="true"></i> Renew</button>` : ""}
-          <button data-delete="${s.id}" aria-label="Delete"><i class="ti ti-trash" style="font-size:15px;" aria-hidden="true"></i></button>
+          <button data-delete="${s.id}" aria-label="Delete ${escapeHtml(s.name)}"><i class="ti ti-trash" style="font-size:15px;" aria-hidden="true"></i></button>
         </div>
       </div>`;
   }).join("");
 
   list.querySelectorAll("[data-delete]").forEach(btn => {
     btn.onclick = async () => {
-      await deleteStudent(btn.getAttribute("data-delete"));
-      await refresh();
+      const id = btn.getAttribute("data-delete");
+      const student = currentStudents.find(s => String(s.id) === String(id));
+      const confirmed = await openModal({
+        title: "Remove student?",
+        body: `This will permanently remove ${student ? escapeHtml(student.name) : "this student"} from the tracker.`,
+        confirmLabel: "Remove",
+        danger: true
+      });
+      if (!confirmed) return;
+      btn.disabled = true;
+      try {
+        await deleteStudent(id);
+        showToast("Student removed", "success");
+        await refresh();
+      } catch (e) {
+        showToast(e.message, "error");
+        btn.disabled = false;
+      }
     };
   });
 
   list.querySelectorAll("[data-renew]").forEach(btn => {
     btn.onclick = async () => {
-      const days = prompt("Renew for how many days?", "30");
+      const id = btn.getAttribute("data-renew");
+      const student = currentStudents.find(s => String(s.id) === String(id));
+      const days = await openModal({
+        title: "Renew course",
+        body: `Set a new duration for ${student ? escapeHtml(student.name) : "this student"}, starting today.`,
+        confirmLabel: "Renew",
+        showInput: true,
+        inputValue: student ? student.duration_days : 30
+      });
       if (!days) return;
-      await renewStudent(btn.getAttribute("data-renew"), days);
-      await refresh();
+      btn.disabled = true;
+      try {
+        await renewStudent(id, days);
+        showToast("Course renewed", "success");
+        await refresh();
+      } catch (e) {
+        showToast(e.message, "error");
+        btn.disabled = false;
+      }
     };
   });
 }
@@ -182,26 +423,66 @@ function escapeHtml(str) {
   return div.innerHTML;
 }
 
-async function refresh() {
+function showSkeleton() {
+  const list = document.getElementById("list");
+  list.innerHTML = Array.from({ length: 3 }).map(() => `<div class="skeleton"></div>`).join("");
+}
+
+function setLastUpdated() {
+  const el = document.getElementById("lastUpdated");
+  const now = new Date();
+  el.textContent = "Updated " + now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+}
+
+async function refresh({ silent = false } = {}) {
+  if (!silent) showSkeleton();
   try {
-    const students = await fetchStudents();
-    render(students);
+    currentStudents = await fetchStudents();
+    updateStats(currentStudents);
+    renderList();
+    setLastUpdated();
   } catch (e) {
     document.getElementById("list").innerHTML = `<p style="color:var(--text-danger); font-size:14px;">${escapeHtml(e.message)}</p>`;
   }
 }
 
 document.getElementById("addBtn").onclick = async () => {
-  const name = document.getElementById("nameInput").value.trim();
-  const course = document.getElementById("courseInput").value.trim();
-  const days = document.getElementById("daysInput").value.trim();
-  if (!name || !course || !days) return alert("Fill in all fields.");
-  await addStudent(name, course, days);
-  document.getElementById("nameInput").value = "";
-  document.getElementById("courseInput").value = "";
-  document.getElementById("daysInput").value = "";
-  await refresh();
+  const nameEl = document.getElementById("nameInput");
+  const courseEl = document.getElementById("courseInput");
+  const daysEl = document.getElementById("daysInput");
+  const btn = document.getElementById("addBtn");
+
+  const name = nameEl.value.trim();
+  const course = courseEl.value.trim();
+  const days = daysEl.value.trim();
+  if (!name || !course || !days || Number(days) <= 0) {
+    showToast("Fill in all fields with a valid duration.", "error");
+    return;
+  }
+  btn.disabled = true;
+  try {
+    await addStudent(name, course, days);
+    nameEl.value = "";
+    courseEl.value = "";
+    daysEl.value = "";
+    showToast("Student added", "success");
+    await refresh();
+    nameEl.focus();
+  } catch (e) {
+    showToast(e.message, "error");
+  } finally {
+    btn.disabled = false;
+  }
 };
 
-setInterval(() => { if (accessToken) refresh(); }, 60000);
+["nameInput", "courseInput", "daysInput"].forEach(id => {
+  document.getElementById(id).addEventListener("keydown", (e) => {
+    if (e.key === "Enter") document.getElementById("addBtn").click();
+  });
+});
+
+document.getElementById("searchInput").addEventListener("input", renderList);
+document.getElementById("sortSelect").addEventListener("change", renderList);
+
+setInterval(() => { if (accessToken) refresh({ silent: true }); }, 60000);
 </script>
