@@ -8,8 +8,13 @@
 <style>
   html, body { margin: 0; padding: 0; background: #F2EEE1; }
   body { display: flex; justify-content: center; padding: 24px 12px; min-height: 100vh; }
-  #app { max-width: 480px; margin: 0 auto; }
+  #app { max-width: 480px; margin: 0 auto; width: 100%; }
   @media (max-width: 480px) { body { padding: 0; } #app { border-radius: 0; min-height: 100vh; max-width: 100%; } }
+  /* Desktop: give the app real breathing room instead of the phone-width column */
+  @media (min-width: 860px) {
+    body { align-items: flex-start; padding: 48px 24px; }
+    #app { max-width: 880px; }
+  }
 </style>
 </head>
 <body>
@@ -112,10 +117,16 @@
     }
     #app .stat-card.warn::before { background: var(--gold); }
     #app .stat-card.danger::before { background: var(--clay); }
+    #app .stat-card.money::before { background: var(--green-soft); }
     #app .stat-num { font-family: var(--font-display); font-size: 26px; font-weight: 600; line-height: 1.2; color: var(--green-deep); }
     #app .stat-card.warn .stat-num { color: var(--gold); }
     #app .stat-card.danger .stat-num { color: var(--clay); }
+    #app .stat-card.money .stat-num { color: var(--green-mid); }
     #app .stat-label { font-size: 11.5px; color: var(--text-secondary); margin-top: 3px; letter-spacing: 0.02em; }
+
+    /* ---------- Payment badge on cards ---------- */
+    #app .paid-badge { font-size: 12px; color: var(--green-mid); font-weight: 600; margin-top: 4px; display: inline-flex; align-items: center; gap: 4px; }
+    #app .paid-badge i { font-size: 13px; }
 
     /* ---------- Inputs ---------- */
     #app .row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; position: relative; z-index: 1; }
@@ -298,8 +309,8 @@
       #app .title-block .title { font-size: 20px; }
       #app .title-block .subtitle { font-size: 12.5px; }
 
-      /* Stats: keep 3-up but tighten so numbers don't crowd */
-      #app .stats-row { grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 18px; }
+      /* Stats: 2x2 grid so 4 cards don't crowd */
+      #app .stats-row { grid-template-columns: repeat(2, 1fr); gap: 6px; margin-bottom: 18px; }
       #app .stat-card { padding: 10px 8px; }
       #app .stat-card::before { top: 10px; bottom: 10px; }
       #app .stat-num { font-size: 17px; }
@@ -335,6 +346,28 @@
       #app .stats-row { grid-template-columns: 1fr; gap: 8px; }
       #app .stat-card { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; }
       #app .stat-num { font-size: 18px; }
+    }
+
+    /* ---------- Desktop ---------- */
+    @media (min-width: 860px) {
+      #app { padding: 2.5rem 3rem 3rem; border-radius: 22px; }
+      #app .title-block .title { font-size: 30px; }
+      #app .topbar { align-items: center; margin-bottom: 28px; }
+
+      #app .stats-row { grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 26px; }
+      #app .stat-num { font-size: 28px; }
+
+      #app .row { flex-wrap: nowrap; align-items: stretch; }
+      #app .row input { min-width: 0; }
+      #app .row #daysInput, #app .row #amountInput { max-width: 160px; }
+      #app .row #addBtn { flex: 0 0 auto; white-space: nowrap; }
+
+      #app .toolbar { flex-wrap: nowrap; }
+
+      #app #list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; align-items: start; }
+      #app .card { margin-bottom: 0; }
+
+      #app .empty-state { grid-column: 1 / -1; }
     }
   </style>
 
@@ -373,12 +406,17 @@
         <div class="stat-num" id="statExpired">0</div>
         <div class="stat-label">Expired</div>
       </div>
+      <div class="stat-card money">
+        <div class="stat-num" id="statCollected">₹0</div>
+        <div class="stat-label">Collected</div>
+      </div>
     </div>
 
     <div class="row">
       <input id="nameInput" placeholder="Student name" />
       <input id="courseInput" placeholder="Course name" />
       <input id="daysInput" type="number" min="1" placeholder="Duration (days)" style="max-width:140px;" />
+      <input id="amountInput" type="number" min="0" step="1" placeholder="Amount paid (₹)" style="max-width:160px;" />
       <button id="addBtn" style="white-space:nowrap;"><i class="ti ti-plus" style="font-size:16px;vertical-align:-2px;" aria-hidden="true"></i> Add student</button>
     </div>
 
@@ -471,7 +509,7 @@ function showToast(message, type = "success") {
 }
 
 // ---------- Modal (confirm delete / renew) ----------
-function openModal({ title, body, confirmLabel, danger = false, showInput = false, inputValue = "30" }) {
+function openModal({ title, body, confirmLabel, danger = false, showInput = false, inputValue = "30", inputPlaceholder = "Days" }) {
   return new Promise((resolve) => {
     const root = document.getElementById("modalRoot");
     root.innerHTML = `
@@ -479,7 +517,7 @@ function openModal({ title, body, confirmLabel, danger = false, showInput = fals
         <div class="modal-box">
           <h3>${title}</h3>
           <p>${body}</p>
-          ${showInput ? `<input id="modalInput" type="number" min="1" value="${inputValue}" placeholder="Days" />` : ""}
+          ${showInput ? `<input id="modalInput" type="number" min="1" value="${inputValue}" placeholder="${inputPlaceholder}" />` : ""}
           <div class="modal-actions">
             <button id="modalCancel" style="background:transparent; color:var(--text-secondary); box-shadow:none; border:1.5px solid var(--border);">Cancel</button>
             <button id="modalConfirm" style="${danger ? 'background:linear-gradient(135deg, var(--clay), var(--danger));' : ''}">${confirmLabel}</button>
@@ -537,13 +575,23 @@ async function fetchStudents() {
   return res.json();
 }
 
-async function addStudent(name, course, days) {
+async function addStudent(name, course, days, amountPaid) {
   const res = await fetch(`${SUPABASE_URL}/rest/v1/students`, {
     method: "POST",
     headers: authHeaders(),
-    body: JSON.stringify([{ name, course_name: course, duration_days: Number(days), start_date: new Date().toISOString().slice(0,10) }])
+    body: JSON.stringify([{ name, course_name: course, duration_days: Number(days), start_date: new Date().toISOString().slice(0,10), amount_paid: Number(amountPaid) || 0 }])
   });
   if (!res.ok) throw new Error("Failed to add: " + await res.text());
+  return res.json();
+}
+
+async function addPayment(id, currentAmount, addAmount) {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/students?id=eq.${id}`, {
+    method: "PATCH",
+    headers: authHeaders(),
+    body: JSON.stringify({ amount_paid: Number(currentAmount || 0) + Number(addAmount) })
+  });
+  if (!res.ok) throw new Error("Failed to record payment: " + await res.text());
   return res.json();
 }
 
@@ -572,17 +620,23 @@ function daysLeft(startDate, duration) {
   return diff;
 }
 
+function formatMoney(n) {
+  return "₹" + Number(n || 0).toLocaleString("en-IN");
+}
+
 function updateStats(students) {
   const total = students.length;
-  let expiring = 0, expired = 0;
+  let expiring = 0, expired = 0, collected = 0;
   students.forEach(s => {
     const left = daysLeft(s.start_date, s.duration_days);
     if (left <= 0) expired++;
     else if (left <= 3) expiring++;
+    collected += Number(s.amount_paid || 0);
   });
   document.getElementById("statTotal").textContent = total;
   document.getElementById("statExpiring").textContent = expiring;
   document.getElementById("statExpired").textContent = expired;
+  document.getElementById("statCollected").textContent = formatMoney(collected);
 }
 
 function getFilteredSortedStudents() {
@@ -634,9 +688,11 @@ function renderList() {
         <div>
           <div class="name">${escapeHtml(s.name)}</div>
           <div class="sub">${escapeHtml(s.course_name)} · started ${s.start_date}</div>
+          <div class="paid-badge"><i class="ti ti-currency-rupee" aria-hidden="true"></i> ${formatMoney(s.amount_paid)} paid</div>
         </div>
-        <div style="display:flex; align-items:center; gap:14px;">
+        <div style="display:flex; align-items:center; gap:14px; flex-wrap:wrap;">
           <span class="badge" style="background:${colorBg}; color:${colorText};">${expired ? "Expired" : left + " day" + (left===1?"":"s") + " left"}</span>
+          <button data-pay="${s.id}" aria-label="Record payment for ${escapeHtml(s.name)}"><i class="ti ti-cash" style="font-size:15px;vertical-align:-2px;" aria-hidden="true"></i> Payment</button>
           ${expired ? `<button data-renew="${s.id}"><i class="ti ti-refresh" style="font-size:15px;vertical-align:-2px;" aria-hidden="true"></i> Renew</button>` : ""}
           <button data-delete="${s.id}" aria-label="Delete ${escapeHtml(s.name)}"><i class="ti ti-trash" style="font-size:15px;" aria-hidden="true"></i></button>
         </div>
@@ -658,6 +714,31 @@ function renderList() {
       try {
         await deleteStudent(id);
         showToast("Student removed", "success");
+        await refresh();
+      } catch (e) {
+        showToast(e.message, "error");
+        btn.disabled = false;
+      }
+    };
+  });
+
+  list.querySelectorAll("[data-pay]").forEach(btn => {
+    btn.onclick = async () => {
+      const id = btn.getAttribute("data-pay");
+      const student = currentStudents.find(s => String(s.id) === String(id));
+      const amount = await openModal({
+        title: "Record payment",
+        body: `Add a payment for ${student ? escapeHtml(student.name) : "this student"}. Currently paid: ${formatMoney(student ? student.amount_paid : 0)}.`,
+        confirmLabel: "Add payment",
+        showInput: true,
+        inputValue: "",
+        inputPlaceholder: "Amount (₹)"
+      });
+      if (!amount) return;
+      btn.disabled = true;
+      try {
+        await addPayment(id, student ? student.amount_paid : 0, amount);
+        showToast("Payment recorded", "success");
         await refresh();
       } catch (e) {
         showToast(e.message, "error");
@@ -724,21 +805,28 @@ document.getElementById("addBtn").onclick = async () => {
   const nameEl = document.getElementById("nameInput");
   const courseEl = document.getElementById("courseInput");
   const daysEl = document.getElementById("daysInput");
+  const amountEl = document.getElementById("amountInput");
   const btn = document.getElementById("addBtn");
 
   const name = nameEl.value.trim();
   const course = courseEl.value.trim();
   const days = daysEl.value.trim();
+  const amount = amountEl.value.trim();
   if (!name || !course || !days || Number(days) <= 0) {
     showToast("Fill in all fields with a valid duration.", "error");
     return;
   }
+  if (amount && Number(amount) < 0) {
+    showToast("Amount paid can't be negative.", "error");
+    return;
+  }
   btn.disabled = true;
   try {
-    await addStudent(name, course, days);
+    await addStudent(name, course, days, amount);
     nameEl.value = "";
     courseEl.value = "";
     daysEl.value = "";
+    amountEl.value = "";
     showToast("Student added", "success");
     await refresh();
     nameEl.focus();
@@ -749,7 +837,7 @@ document.getElementById("addBtn").onclick = async () => {
   }
 };
 
-["nameInput", "courseInput", "daysInput"].forEach(id => {
+["nameInput", "courseInput", "daysInput", "amountInput"].forEach(id => {
   document.getElementById(id).addEventListener("keydown", (e) => {
     if (e.key === "Enter") document.getElementById("addBtn").click();
   });
