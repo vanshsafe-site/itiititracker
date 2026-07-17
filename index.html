@@ -509,7 +509,7 @@ function showToast(message, type = "success") {
 }
 
 // ---------- Modal (confirm delete / renew) ----------
-function openModal({ title, body, confirmLabel, danger = false, showInput = false, inputValue = "30", inputPlaceholder = "Days" }) {
+function openModal({ title, body, confirmLabel, danger = false, showInput = false, inputValue = "30", inputPlaceholder = "Days", showDate = false, dateValue = "" }) {
   return new Promise((resolve) => {
     const root = document.getElementById("modalRoot");
     root.innerHTML = `
@@ -518,6 +518,7 @@ function openModal({ title, body, confirmLabel, danger = false, showInput = fals
           <h3>${title}</h3>
           <p>${body}</p>
           ${showInput ? `<input id="modalInput" type="number" min="1" value="${inputValue}" placeholder="${inputPlaceholder}" />` : ""}
+          ${showDate ? `<label style="display:block; font-size:12px; color:var(--text-secondary); margin:6px 0 4px;">Date of payment</label><input id="modalDate" type="date" value="${dateValue}" />` : ""}
           <div class="modal-actions">
             <button id="modalCancel" style="background:transparent; color:var(--text-secondary); box-shadow:none; border:1.5px solid var(--border);">Cancel</button>
             <button id="modalConfirm" style="${danger ? 'background:linear-gradient(135deg, var(--clay), var(--danger));' : ''}">${confirmLabel}</button>
@@ -533,7 +534,13 @@ function openModal({ title, body, confirmLabel, danger = false, showInput = fals
       if (showInput) {
         const val = document.getElementById("modalInput").value;
         if (!val || Number(val) <= 0) return;
-        close(val);
+        if (showDate) {
+          const dateVal = document.getElementById("modalDate").value;
+          if (!dateVal) return;
+          close({ amount: val, date: dateVal });
+        } else {
+          close(val);
+        }
       } else {
         close(true);
       }
@@ -579,17 +586,27 @@ async function addStudent(name, course, days, amountPaid) {
   const res = await fetch(`${SUPABASE_URL}/rest/v1/students`, {
     method: "POST",
     headers: authHeaders(),
-    body: JSON.stringify([{ name, course_name: course, duration_days: Number(days), start_date: new Date().toISOString().slice(0,10), amount_paid: Number(amountPaid) || 0 }])
+    body: JSON.stringify([{
+      name,
+      course_name: course,
+      duration_days: Number(days),
+      start_date: new Date().toISOString().slice(0,10),
+      amount_paid: Number(amountPaid) || 0,
+      last_payment_date: Number(amountPaid) > 0 ? new Date().toISOString().slice(0,10) : null
+    }])
   });
   if (!res.ok) throw new Error("Failed to add: " + await res.text());
   return res.json();
 }
 
-async function addPayment(id, currentAmount, addAmount) {
+async function addPayment(id, currentAmount, addAmount, paymentDate) {
   const res = await fetch(`${SUPABASE_URL}/rest/v1/students?id=eq.${id}`, {
     method: "PATCH",
     headers: authHeaders(),
-    body: JSON.stringify({ amount_paid: Number(currentAmount || 0) + Number(addAmount) })
+    body: JSON.stringify({
+      amount_paid: Number(currentAmount || 0) + Number(addAmount),
+      last_payment_date: paymentDate || new Date().toISOString().slice(0, 10)
+    })
   });
   if (!res.ok) throw new Error("Failed to record payment: " + await res.text());
   return res.json();
@@ -688,7 +705,7 @@ function renderList() {
         <div>
           <div class="name">${escapeHtml(s.name)}</div>
           <div class="sub">${escapeHtml(s.course_name)} · started ${s.start_date}</div>
-          <div class="paid-badge"><i class="ti ti-currency-rupee" aria-hidden="true"></i> ${formatMoney(s.amount_paid)} paid</div>
+          <div class="paid-badge"><i class="ti ti-currency-rupee" aria-hidden="true"></i> ${formatMoney(s.amount_paid)} paid${s.last_payment_date ? ` · last on ${s.last_payment_date}` : ""}</div>
         </div>
         <div style="display:flex; align-items:center; gap:14px; flex-wrap:wrap;">
           <span class="badge" style="background:${colorBg}; color:${colorText};">${expired ? "Expired" : left + " day" + (left===1?"":"s") + " left"}</span>
@@ -726,18 +743,21 @@ function renderList() {
     btn.onclick = async () => {
       const id = btn.getAttribute("data-pay");
       const student = currentStudents.find(s => String(s.id) === String(id));
-      const amount = await openModal({
+      const result = await openModal({
         title: "Record payment",
         body: `Add a payment for ${student ? escapeHtml(student.name) : "this student"}. Currently paid: ${formatMoney(student ? student.amount_paid : 0)}.`,
         confirmLabel: "Add payment",
         showInput: true,
         inputValue: "",
-        inputPlaceholder: "Amount (₹)"
+        inputPlaceholder: "Amount (₹)",
+        showDate: true,
+        dateValue: new Date().toISOString().slice(0, 10)
       });
-      if (!amount) return;
+      if (!result) return;
+      const { amount, date } = result;
       btn.disabled = true;
       try {
-        await addPayment(id, student ? student.amount_paid : 0, amount);
+        await addPayment(id, student ? student.amount_paid : 0, amount, date);
         showToast("Payment recorded", "success");
         await refresh();
       } catch (e) {
