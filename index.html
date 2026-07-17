@@ -509,6 +509,57 @@ function showToast(message, type = "success") {
 }
 
 // ---------- Modal (confirm delete / renew) ----------
+function openEditModal(student) {
+  return new Promise((resolve) => {
+    const root = document.getElementById("modalRoot");
+    root.innerHTML = `
+      <div class="modal-overlay" id="modalOverlay">
+        <div class="modal-box" style="max-width:360px;">
+          <h3>Edit student</h3>
+          <p>Update details for ${escapeHtml(student.name)}.</p>
+          <label style="display:block; font-size:12px; color:var(--text-secondary); margin:6px 0 4px;">Name</label>
+          <input id="editName" type="text" value="${escapeHtml(student.name)}" />
+          <label style="display:block; font-size:12px; color:var(--text-secondary); margin:6px 0 4px;">Course</label>
+          <input id="editCourse" type="text" value="${escapeHtml(student.course_name)}" />
+          <label style="display:block; font-size:12px; color:var(--text-secondary); margin:6px 0 4px;">Start date</label>
+          <input id="editStart" type="date" value="${student.start_date}" />
+          <label style="display:block; font-size:12px; color:var(--text-secondary); margin:6px 0 4px;">Duration (days)</label>
+          <input id="editDays" type="number" min="1" value="${student.duration_days}" />
+          <label style="display:block; font-size:12px; color:var(--text-secondary); margin:6px 0 4px;">Amount paid (₹)</label>
+          <input id="editAmount" type="number" min="0" value="${student.amount_paid || 0}" />
+          <label style="display:block; font-size:12px; color:var(--text-secondary); margin:6px 0 4px;">Last payment date</label>
+          <input id="editPaymentDate" type="date" value="${student.last_payment_date || ''}" />
+          <div class="modal-actions">
+            <button id="modalCancel" style="background:transparent; color:var(--text-secondary); box-shadow:none; border:1.5px solid var(--border);">Cancel</button>
+            <button id="modalConfirm">Save changes</button>
+          </div>
+        </div>
+      </div>`;
+    const close = (result) => { root.innerHTML = ""; resolve(result); };
+    document.getElementById("modalOverlay").addEventListener("click", (e) => {
+      if (e.target.id === "modalOverlay") close(null);
+    });
+    document.getElementById("modalCancel").onclick = () => close(null);
+    document.getElementById("modalConfirm").onclick = () => {
+      const name = document.getElementById("editName").value.trim();
+      const course_name = document.getElementById("editCourse").value.trim();
+      const start_date = document.getElementById("editStart").value;
+      const duration_days = document.getElementById("editDays").value;
+      const amount_paid = document.getElementById("editAmount").value;
+      const last_payment_date = document.getElementById("editPaymentDate").value;
+      if (!name || !course_name || !start_date || !duration_days || Number(duration_days) <= 0) return;
+      close({
+        name,
+        course_name,
+        start_date,
+        duration_days: Number(duration_days),
+        amount_paid: Number(amount_paid) || 0,
+        last_payment_date: last_payment_date || null
+      });
+    };
+  });
+}
+
 function openModal({ title, body, confirmLabel, danger = false, showInput = false, inputValue = "30", inputPlaceholder = "Days", showDate = false, dateValue = "" }) {
   return new Promise((resolve) => {
     const root = document.getElementById("modalRoot");
@@ -612,6 +663,16 @@ async function addPayment(id, currentAmount, addAmount, paymentDate) {
   return res.json();
 }
 
+async function updateStudent(id, fields) {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/students?id=eq.${id}`, {
+    method: "PATCH",
+    headers: authHeaders(),
+    body: JSON.stringify(fields)
+  });
+  if (!res.ok) throw new Error("Failed to update: " + await res.text());
+  return res.json();
+}
+
 async function renewStudent(id, days) {
   const res = await fetch(`${SUPABASE_URL}/rest/v1/students?id=eq.${id}`, {
     method: "PATCH",
@@ -711,6 +772,7 @@ function renderList() {
           <span class="badge" style="background:${colorBg}; color:${colorText};">${expired ? "Expired" : left + " day" + (left===1?"":"s") + " left"}</span>
           <button data-pay="${s.id}" aria-label="Record payment for ${escapeHtml(s.name)}"><i class="ti ti-cash" style="font-size:15px;vertical-align:-2px;" aria-hidden="true"></i> Payment</button>
           ${expired ? `<button data-renew="${s.id}"><i class="ti ti-refresh" style="font-size:15px;vertical-align:-2px;" aria-hidden="true"></i> Renew</button>` : ""}
+          <button data-edit="${s.id}" aria-label="Edit ${escapeHtml(s.name)}" style="background:transparent; color:var(--text-secondary); box-shadow:none; border:1.5px solid var(--border);"><i class="ti ti-pencil" style="font-size:15px;" aria-hidden="true"></i></button>
           <button data-delete="${s.id}" aria-label="Delete ${escapeHtml(s.name)}"><i class="ti ti-trash" style="font-size:15px;" aria-hidden="true"></i></button>
         </div>
       </div>`;
@@ -759,6 +821,25 @@ function renderList() {
       try {
         await addPayment(id, student ? student.amount_paid : 0, amount, date);
         showToast("Payment recorded", "success");
+        await refresh();
+      } catch (e) {
+        showToast(e.message, "error");
+        btn.disabled = false;
+      }
+    };
+  });
+
+  list.querySelectorAll("[data-edit]").forEach(btn => {
+    btn.onclick = async () => {
+      const id = btn.getAttribute("data-edit");
+      const student = currentStudents.find(s => String(s.id) === String(id));
+      if (!student) return;
+      const changes = await openEditModal(student);
+      if (!changes) return;
+      btn.disabled = true;
+      try {
+        await updateStudent(id, changes);
+        showToast("Student updated", "success");
         await refresh();
       } catch (e) {
         showToast(e.message, "error");
